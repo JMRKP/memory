@@ -42,10 +42,11 @@
 (defn send-hello []
   (chsk-send! [:test/id1 {:hello "hello"}]))
 
-(defn print-reply [reply] (println reply))
+(defn print-reply [reply]
+  (println reply))
 
-(defn create-game[]
-  (chsk-send! [:game/create-game {:game "game"}] 8000 print-reply))
+(defn create-game [set-game-id]
+  (chsk-send! [:game/create-game {:game "game"}] 8000 set-game-id))
 
 (defn join-game [game-id]
   (chsk-send! [:game/join-game {:game-id game-id}]))

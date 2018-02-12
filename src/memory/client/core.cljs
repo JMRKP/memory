@@ -1,12 +1,13 @@
 (ns memory.client.core
     (:require
       [memory.client.communication :as communication]
-      [reagent.core :as reagent]
+      [reagent.core :as reagent :refer [atom]]
       [re-frame.core :as rf]
       [clojure.string :as str]
       [memory.client.communication :as communication]))
 
 ;; -- Domino 1 - Event Dispatch -----------------------------------------------
+
 
 ;; -- Domino 2 - Event Handlers -----------------------------------------------
 
@@ -32,7 +33,8 @@
                   {:id 13 :url "https://static.geo.de/bilder/28/52/60898/galleryimage/01-baby-faultiere-kermie.jpg" :turned false :resolved 0}
                   {:id 15 :url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTC2b6U3sUWG3XWf0o-rCRN7KXhF9xvPAbBFht-gTsq8r1m1LeRug" :turned false :resolved 0}
                   {:id 16 :url "http://media.einfachtierisch.de/thumbnail/600/0/media.einfachtierisch.de/images/2013/01/Junge-Katze-Erziehen.jpg" :turned false :resolved 0}
-      ]})}))    ;; so the application state will initially be a map with two keys
+      ]})
+      :game-id (atom nil)}))    ;; so the application state will initially be a map with two keys
 
 
 (rf/reg-event-db                ;; usage:  (dispatch [:time-color-change 34562])
@@ -43,14 +45,24 @@
     (assoc db :game (atom (update-in @(db :game) [:deck index] assoc :turned true))))))  ;; compute and return the new application state
 
 (rf/reg-event-db
+  :set-game-id
+  (print "set-game-id")
+   (fn [db [_ game-id]]
+    (print game-id)
+   (assoc db :game-id (atom (reset! (db :game-id) game-id)))
+   (print "hier bin ich ")))
+
+
+(defn set-game-id [reply]
+  (print reply)
+  #(rf/dispatch [:set-game-id (reply)]))
+
+
+(rf/reg-event-db
   :start-game
   (fn []
-    (let [game-id (communication/create-game)])
-    (print "create-game")
-
-    ))
-
-;(defn toggle [id] (swap! todos update-in [id :done] not))
+    (print "start game")
+    (communication/create-game set-game-id)))
 
 ;; -- Domino 4 - Query  -------------------------------------------------------
 
@@ -59,6 +71,10 @@
   (fn [db _]     ;; db is current app state. 2nd unused param is query vector
     (:game db))) ;; return a query computation over the application state
 
+(rf/reg-sub
+  :game-id
+  (fn [db _]     ;; db is current app state. 2nd unused param is query vector
+    (:game-id db)))
 
 ;; -- Domino 5 - View Functions ----------------------------------------------
 
@@ -101,7 +117,10 @@
 (defn start-view []
   [:div#start-view
     [:button {:on-click #(rf/dispatch [:start-game])} "Start Game" ]
-    [join-game "111"]])
+    [join-game "111"]
+    ;;[:div @@(rf/subscribe [:game-id])]
+    [:button {:on-click #(rf/dispatch [:set-game-id "neue game id"])} "Set game id" ]
+    ])
 
 (defn main-view []
   [:div#main-view
