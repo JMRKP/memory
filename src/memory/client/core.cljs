@@ -1,5 +1,6 @@
 (ns memory.client.core
     (:require
+      [memory.client.communication :as communication]
       [reagent.core :as reagent]
       [re-frame.core :as rf]
       [clojure.string :as str]
@@ -69,6 +70,27 @@
 (defn card-item-closed []
  (fn [{:keys [id]}]
    [:li {:on-click #(rf/dispatch [:turn-card id])}]))
+
+(defn join-game []
+       (let [game-id (atom nil)] (fn []
+       [:div "Join Game"
+         [:form
+            [:input {:value @game-id
+                    :type "text"
+                    :on-change #(reset! game-id (-> % .-target .-value))}]
+            [:button {:type "button"
+                     :name "join"
+                     :onClick #(communication/join-game @game-id)}
+                     "Join Game!"]]
+          [:div @game-id]]
+      )))
+
+(defn gameboard []
+   (let [items @@(rf/subscribe [:cards])]
+     [:div#gameboard
+       [:ul#card-list {:style {:width "600px"}}
+         (for [card items]
+             ^{:key (:id (val card))} [card-item (val card)])]]))
 
 (defn card-item [card]
  (fn [{:keys [turned]}]
