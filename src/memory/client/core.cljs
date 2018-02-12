@@ -72,25 +72,18 @@
    [:li {:on-click #(rf/dispatch [:turn-card id])}]))
 
 (defn join-game []
-       (let [game-id (atom nil)] (fn []
-       [:div "Join Game"
-         [:form
-            [:input {:value @game-id
-                    :type "text"
-                    :on-change #(reset! game-id (-> % .-target .-value))}]
-            [:button {:type "button"
-                     :name "join"
-                     :onClick #(communication/join-game @game-id)}
-                     "Join Game!"]]
-          [:div @game-id]]
-      )))
-
-(defn gameboard []
-   (let [items @@(rf/subscribe [:cards])]
-     [:div#gameboard
-       [:ul#card-list {:style {:width "600px"}}
-         (for [card items]
-             ^{:key (:id (val card))} [card-item (val card)])]]))
+  (let [game-id (atom nil)]
+    (fn []
+      [:div
+        [:input {:value @game-id
+                :type "text"
+                :on-change #(reset! game-id (-> % .-target .-value))}]
+        [:button {:type "button"
+                 :name "join"
+                 :onClick #(communication/join-game @game-id)}
+                 "Join Game!"]
+        [:div @game-id]]
+  )))
 
 (defn card-item [card]
  (fn [{:keys [turned]}]
@@ -108,7 +101,7 @@
 (defn start-view []
   [:div#start-view
     [:button {:on-click #(rf/dispatch [:start-game])} "Start Game" ]
-    [:button "Join Game"]])
+    [join-game "111"]])
 
 (defn main-view []
   [:div#main-view
