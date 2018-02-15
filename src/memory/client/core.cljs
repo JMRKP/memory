@@ -14,7 +14,8 @@
 (rf/reg-event-db              ;; sets up initial application state
   :initialize                 ;; usage:  (dispatch [:initialize])
   (fn [_ _]                   ;; the two parameters are not important here, so use _
-    {:game
+    {:game-id "Game-id"
+    :game
       (atom
         {:active-player 1
          :deck  [ {:id 0 :url "http://cdn.kickvick.com/wp-content/uploads/2014/11/cute-baby-animals-39.jpg" :turned false :resolved 0}
@@ -34,7 +35,7 @@
                   {:id 15 :url "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTC2b6U3sUWG3XWf0o-rCRN7KXhF9xvPAbBFht-gTsq8r1m1LeRug" :turned false :resolved 0}
                   {:id 16 :url "http://media.einfachtierisch.de/thumbnail/600/0/media.einfachtierisch.de/images/2013/01/Junge-Katze-Erziehen.jpg" :turned false :resolved 0}
       ]})
-      :game-id (atom nil)}))    ;; so the application state will initially be a map with two keys
+      }))    ;; so the application state will initially be a map with two keys
 
 
 (rf/reg-event-db                ;; usage:  (dispatch [:time-color-change 34562])
@@ -46,22 +47,25 @@
 
 (rf/reg-event-db
   :set-game-id
-  (print "set-game-id")
    (fn [db [_ game-id]]
-    (print game-id)
-   (assoc db :game-id (atom (reset! (db :game-id) game-id)))
-   (print "hier bin ich ")))
+     (print "übergabewert" game-id)
+     (print (:game-id db))
+    (assoc db :game-id game-id)
+    ))
 
 
 (defn set-game-id [reply]
-  (print reply)
-  #(rf/dispatch [:set-game-id (reply)]))
+  (print (:game-id reply)))
 
+(rf/reg-event-db
+    :start-game-game
+    (fn []
+      (print "start-game-game")
+      #(rf/dispatch [:set-game-id "started game"])))
 
 (rf/reg-event-db
   :start-game
   (fn []
-    (print "start game")
     (communication/create-game set-game-id)))
 
 ;; -- Domino 4 - Query  -------------------------------------------------------
@@ -118,7 +122,7 @@
   [:div#start-view
     [:button {:on-click #(rf/dispatch [:start-game])} "Start Game" ]
     [join-game "111"]
-    ;;[:div @@(rf/subscribe [:game-id])]
+    [:div @(rf/subscribe [:game-id])]
     [:button {:on-click #(rf/dispatch [:set-game-id "neue game id"])} "Set game id" ]
     ])
 
